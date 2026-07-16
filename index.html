@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Чек-лист · финансовая диагностика</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f5f7fa 0%, #eef1f5 100%);
+      font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      margin: 0;
+    }
+
+    .checklist-card {
+      max-width: 650px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 2.5rem;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.08), 0 10px 25px rgba(0, 0, 0, 0.05);
+      padding: 0.8rem 2rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(5, 177, 102, 0.08);
+    }
+
+    .completion-badge {
+      background: #ebfaf1;
+      border: 1px solid rgba(5, 177, 102, 0.3);
+      border-radius: 3rem;
+      padding: 0.4rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #046c3c;
+      margin: 0 auto;
+      width: fit-content;
+      transition: opacity 0.3s ease, transform 0.3s ease, margin 0.3s;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(5, 177, 102, 0.12);
+      margin-bottom: 0;
+      line-height: 1.2;
+    }
+
+    .completion-badge.visible {
+      opacity: 1;
+      transform: translateY(0);
+      margin-bottom: 0.2rem;
+    }
+
+    .completion-badge span {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-top: 0;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      background: #ffffff;
+      padding: 0.8rem 1.1rem;
+      border-radius: 1rem;
+      transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+      border: 1.5px solid #edf0f4;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+
+    .task-item:hover {
+      background: #f8fdfa;
+      border-color: #cbe5d9;
+      box-shadow: 0 6px 14px rgba(5, 177, 102, 0.06);
+    }
+
+    .custom-checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      margin-top: 1px;
+    }
+
+    .custom-checkbox input {
+      display: none;
+    }
+
+    .checkmark {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid #ccd6e0;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    input:checked + .checkmark {
+      background: #05B166;
+      border-color: #05B166;
+      box-shadow: 0 4px 10px rgba(5, 177, 102, 0.3);
+    }
+
+    .checkmark::after {
+      content: "✓";
+      opacity: 0;
+      transform: scale(0.6);
+      transition: all 0.15s ease;
+      font-weight: 700;
+      color: white;
+      display: block;
+      font-size: 13px;
+    }
+
+    input:checked + .checkmark::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .task-text {
+      font-size: 1rem;
+      font-weight: 450;
+      color: #1e293b;
+      line-height: 1.4;
+      transition: color 0.2s ease;
+      word-break: break-word;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .task-item.completed .task-text {
+      color: #05B166;
+      font-weight: 500;
+    }
+
+    .progress-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.1rem;
+    }
+
+    .progress-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #384152;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .progress-count {
+      color: #05B166;
+      font-weight: 650;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: #e4e9f2;
+      border-radius: 100px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #05B166;
+      border-radius: 100px;
+      transition: width 0.35s cubic-bezier(0.2, 0.9, 0.4, 1);
+      box-shadow: 0 0 12px rgba(5, 177, 102, 0.5);
+    }
+
+    .hint-text {
+      text-align: center;
+      color: #5e6f7e;
+      font-size: 0.78rem;
+      font-weight: 400;
+      margin-top: 0.1rem;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    @media (max-width: 480px) {
+      .checklist-card {
+        padding: 0.6rem 1.2rem 1.5rem;
+      }
+      .task-text {
+        font-size: 0.93rem;
+      }
+      .task-item {
+        padding: 0.7rem 0.9rem;
+        gap: 0.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="checklist-card">
+    <div id="completionMessage" class="completion-badge">
+      <span>🎉</span> Миссия выполнена!
+    </div>
+
+    <div id="tasksContainer" class="tasks-list"></div>
+
+    <div class="progress-section">
+      <div class="progress-stats">
+        <span>Прогресс</span>
+        <span><span id="completedCount">0</span> / <span id="totalCount">13</span> <span class="progress-count">✓</span></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+      <div class="hint-text" id="hintMessage">Отмечай шаги, чтобы приблизиться к цели</div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const items = [
+        "Я честно определил свой сценарий сейчас: банкротство (трачу больше, чем зарабатываю), бедность (трачу всё, что зарабатываю) или богатство (трачу меньше, чем зарабатываю)",
+        "Я составил список расходов, которые можно оптимизировать (связь/интернет, банки/страховки, ненужные услуги, подписки).",
+        "Я сделал расхламление и продал то, чем не пользуюсь.",
+        "Я определил свои триггеры импульсивных покупок: скидка, «последний шанс», рассрочка, стресс/скука/праздник.",
+        "Для дорогих незапланированных покупок применяю правило: пауза на 24 часа.",
+        "Я заполнил в таблице свой стабильный доход за месяц.",
+        "Я заполнил в таблице стабильный пассивный доход (если есть: аренда, дивиденды).",
+        "Я заполнил постоянный расход (все регулярные траты за месяц).",
+        "Я определил стабильную дельту: дельта = доход − расход.",
+        "Я определил процент дохода, который буду платить себе",
+        "Я настроил автоперевод в день зарплаты: сначала себе, потом траты.",
+        "Я выбрал формат ведения бюджета, который реально буду открывать: таблица или приложение.",
+        "Я запланировал регулярные 10 минут на то, чтобы заниматься анализом своего бюджета"
+      ];
+
+      const tasksContainer = document.getElementById('tasksContainer');
+      const completedSpan = document.getElementById('completedCount');
+      const totalSpan = document.getElementById('totalCount');
+      const progressFill = document.getElementById('progressFill');
+      const completionMessageDiv = document.getElementById('completionMessage');
+      const hintMessage = document.getElementById('hintMessage');
+
+      totalSpan.textContent = items.length;
+
+      let checkedState = new Array(items.length).fill(false);
+
+      function updateUI() {
+        const completedTotal = checkedState.filter(Boolean).length;
+        const total = items.length;
+        const percent = total === 0 ? 0 : (completedTotal / total) * 100;
+
+        completedSpan.textContent = completedTotal;
+        progressFill.style.width = `${percent}%`;
+
+        const allCompleted = completedTotal === total;
+
+        if (allCompleted) {
+          completionMessageDiv.classList.add('visible');
+          hintMessage.textContent = 'Превосходно! Все шаги выполнены 🚀';
+        } else {
+          completionMessageDiv.classList.remove('visible');
+          if (completedTotal === 0) {
+            hintMessage.textContent = 'Начни отмечать пункты — прогресс не заставит ждать';
+          } else {
+            hintMessage.textContent = `Осталось всего ${total - completedTotal} шаг(а) — ты справляешься!`;
+          }
+        }
+
+        const taskItems = document.querySelectorAll('.task-item');
+        taskItems.forEach((item, index) => {
+          if (checkedState[index]) {
+            item.classList.add('completed');
+            item.setAttribute('aria-checked', 'true');
+          } else {
+            item.classList.remove('completed');
+            item.setAttribute('aria-checked', 'false');
+          }
+        });
+      }
+
+      function handleTaskClick(index) {
+        if (index < 0 || index >= checkedState.length) return;
+        checkedState[index] = !checkedState[index];
+
+        const checkbox = document.getElementById(`task-check-${index}`);
+        if (checkbox) {
+          checkbox.checked = checkedState[index];
+        }
+
+        updateUI();
+      }
+
+      function renderTasks() {
+        tasksContainer.innerHTML = '';
+
+        items.forEach((text, idx) => {
+          const taskDiv = document.createElement('div');
+          taskDiv.className = 'task-item';
+          if (checkedState[idx]) {
+            taskDiv.classList.add('completed');
+          }
+
+          const label = document.createElement('label');
+          label.className = 'custom-checkbox';
+
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.id = `task-check-${idx}`;
+          input.checked = checkedState[idx];
+          input.setAttribute('aria-label', text);
+
+          const checkmarkSpan = document.createElement('span');
+          checkmarkSpan.className = 'checkmark';
+
+          label.appendChild(input);
+          label.appendChild(checkmarkSpan);
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'task-text';
+          textSpan.textContent = text;
+
+          taskDiv.appendChild(label);
+          taskDiv.appendChild(textSpan);
+
+          taskDiv.addEventListener('click', (e) => {
+            if (e.target.tagName === 'INPUT') {
+              e.preventDefault();
+              handleTaskClick(idx);
+              return;
+            }
+            handleTaskClick(idx);
+          });
+
+          taskDiv.setAttribute('tabindex', '0');
+          taskDiv.setAttribute('role', 'checkbox');
+          taskDiv.setAttribute('aria-checked', checkedState[idx]);
+
+          taskDiv.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault();
+              handleTaskClick(idx);
+            }
+          });
+
+          tasksContainer.appendChild(taskDiv);
+        });
+
+        updateUI();
+      }
+
+      renderTasks();
+    })();
+  </script>
+</body>
+</html>
