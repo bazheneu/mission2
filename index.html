@@ -101,20 +101,6 @@
       box-shadow: 0 6px 14px rgba(5, 177, 102, 0.06);
     }
 
-    .custom-checkbox {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      width: 22px;
-      height: 22px;
-      margin-top: 1px;
-    }
-
-    .custom-checkbox input {
-      display: none;
-    }
-
     .checkmark {
       width: 20px;
       height: 20px;
@@ -126,9 +112,10 @@
       justify-content: center;
       transition: all 0.15s ease;
       flex-shrink: 0;
+      margin-top: 1px;
     }
 
-    input:checked + .checkmark {
+    .task-item.completed .checkmark {
       background: #05B166;
       border-color: #05B166;
       box-shadow: 0 4px 10px rgba(5, 177, 102, 0.3);
@@ -145,7 +132,7 @@
       font-size: 13px;
     }
 
-    input:checked + .checkmark::after {
+    .task-item.completed .checkmark::after {
       opacity: 1;
       transform: scale(1);
     }
@@ -310,15 +297,9 @@
         });
       }
 
-      function handleTaskClick(index) {
+      function toggleTask(index) {
         if (index < 0 || index >= checkedState.length) return;
         checkedState[index] = !checkedState[index];
-
-        const checkbox = document.getElementById(`task-check-${index}`);
-        if (checkbox) {
-          checkbox.checked = checkedState[index];
-        }
-
         updateUI();
       }
 
@@ -332,35 +313,19 @@
             taskDiv.classList.add('completed');
           }
 
-          const label = document.createElement('label');
-          label.className = 'custom-checkbox';
-
-          const input = document.createElement('input');
-          input.type = 'checkbox';
-          input.id = `task-check-${idx}`;
-          input.checked = checkedState[idx];
-          input.setAttribute('aria-label', text);
-
-          const checkmarkSpan = document.createElement('span');
-          checkmarkSpan.className = 'checkmark';
-
-          label.appendChild(input);
-          label.appendChild(checkmarkSpan);
+          const checkmarkDiv = document.createElement('div');
+          checkmarkDiv.className = 'checkmark';
 
           const textSpan = document.createElement('span');
           textSpan.className = 'task-text';
           textSpan.textContent = text;
 
-          taskDiv.appendChild(label);
+          taskDiv.appendChild(checkmarkDiv);
           taskDiv.appendChild(textSpan);
 
-          taskDiv.addEventListener('click', (e) => {
-            if (e.target.tagName === 'INPUT') {
-              e.preventDefault();
-              handleTaskClick(idx);
-              return;
-            }
-            handleTaskClick(idx);
+          // Единый обработчик клика на весь пункт
+          taskDiv.addEventListener('click', () => {
+            toggleTask(idx);
           });
 
           taskDiv.setAttribute('tabindex', '0');
@@ -370,7 +335,7 @@
           taskDiv.addEventListener('keydown', (e) => {
             if (e.key === ' ' || e.key === 'Enter') {
               e.preventDefault();
-              handleTaskClick(idx);
+              toggleTask(idx);
             }
           });
 
